@@ -54,17 +54,12 @@ class ExampleViewModel @Inject constructor(
                 updateState { state -> state.copy(isLoading = data.value) }
             }
 
-            is ExampleTrigger.GenerateNumber -> {
-                getRandomNumberUseCase()
-                    .onSuccess { generatedNumber ->
-                        updateState { state ->
-                            state.copy(randomNumber = generatedNumber.value)
-                        }
-                    }.also {
-                        sendTrigger(ExampleTrigger.SetLoading(false))
-                    }
-            }
+            is ExampleTrigger.GenerateNumber -> generateNumber()
         }
+    }
+
+    override suspend fun onDataDemanded() {
+        generateNumber()
     }
 
     override fun receiveIntent(intent: ExampleIntent) {
@@ -77,6 +72,17 @@ class ExampleViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun generateNumber() {
+        getRandomNumberUseCase()
+            .onSuccess { generatedNumber ->
+                updateState { state ->
+                    state.copy(randomNumber = generatedNumber.value)
+                }
+            }.also {
+                sendTrigger(ExampleTrigger.SetLoading(false))
+            }
     }
 
     sealed interface ExampleTrigger {
