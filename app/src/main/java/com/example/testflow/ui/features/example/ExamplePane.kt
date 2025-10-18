@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,6 +56,17 @@ fun ExamplePane(
             TopAppBar(title = { Text("Example List") })
         },
         modifier = modifier,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { onSendIntent(ExampleIntent.GetRandomNumber) },
+                text = {
+                    Text("${state.randomNumber}")
+                },
+                icon = {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
+            )
+        }
     ) { padding ->
         Box(
             modifier = Modifier

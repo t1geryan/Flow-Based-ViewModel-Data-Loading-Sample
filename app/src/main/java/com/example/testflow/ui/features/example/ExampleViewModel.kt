@@ -5,6 +5,7 @@ import com.example.testflow.core.mvi.IntentReceiver
 import com.example.testflow.core.mvi.StateHolderViewModel
 import com.example.testflow.domain.models.ExampleItemsList
 import com.example.testflow.domain.usecases.GetExampleItemsUseCase
+import com.example.testflow.domain.usecases.GetRandomNumberUseCase
 import com.example.testflow.ui.features.example.ExampleViewModel.ExampleTrigger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExampleViewModel @Inject constructor(
+    private val getRandomNumberUseCase: GetRandomNumberUseCase,
     private val getItemsUseCase: GetExampleItemsUseCase,
 ) : StateHolderViewModel<ExampleState, ExampleTrigger>(ExampleState()),
     IntentReceiver<ExampleIntent> {
@@ -47,22 +49,41 @@ class ExampleViewModel @Inject constructor(
                     )
                 }
             }
+
+            is ExampleTrigger.SetLoading -> {
+                updateState { state -> state.copy(isLoading = data.value) }
+            }
+
+            is ExampleTrigger.GenerateNumber -> {
+                getRandomNumberUseCase()
+                    .onSuccess { generatedNumber ->
+                        updateState { state ->
+                            state.copy(randomNumber = generatedNumber.value)
+                        }
+                    }.also {
+                        sendTrigger(ExampleTrigger.SetLoading(false))
+                    }
+            }
         }
     }
 
     override fun receiveIntent(intent: ExampleIntent) {
-        when (intent) {
-            is ExampleIntent.ClickExample -> onItemClicked(intent.id)
-        }
-    }
-
-    private fun onItemClicked(id: Int) {
         viewModelScope.launch {
-            sendTrigger(ExampleTrigger.SelectItem(id))
+            when (intent) {
+                is ExampleIntent.ClickExample -> sendTrigger(ExampleTrigger.SelectItem(intent.id))
+                ExampleIntent.GetRandomNumber -> {
+                    sendTrigger(ExampleTrigger.SetLoading(true))
+                    sendTrigger(ExampleTrigger.GenerateNumber)
+                }
+            }
         }
     }
 
     sealed interface ExampleTrigger {
         data class SelectItem(val itemId: Int) : ExampleTrigger
+
+        data object GenerateNumber : ExampleTrigger
+
+        data class SetLoading(val value: Boolean) : ExampleTrigger
     }
 }

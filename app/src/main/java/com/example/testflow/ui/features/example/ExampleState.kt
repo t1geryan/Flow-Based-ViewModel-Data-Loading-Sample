@@ -10,4 +10,5 @@ data class ExampleItemUiState(
 data class ExampleState(
     val items: List<ExampleItemUiState> = emptyList(),
     val isLoading: Boolean = true,
+    val randomNumber: Int? = null,
 )
