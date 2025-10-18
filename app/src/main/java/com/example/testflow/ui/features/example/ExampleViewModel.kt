@@ -1,71 +1,68 @@
 package com.example.testflow.ui.features.example
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.testflow.core.mvi.IntentReceiver
+import com.example.testflow.core.mvi.StateHolderViewModel
 import com.example.testflow.domain.models.ExampleItemsList
 import com.example.testflow.domain.usecases.GetExampleItemsUseCase
+import com.example.testflow.ui.features.example.ExampleViewModel.ExampleTrigger
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ExampleViewModel @Inject constructor(
     private val getItemsUseCase: GetExampleItemsUseCase,
-) : ViewModel() {
-    private var _state = ExampleState()
+) : StateHolderViewModel<ExampleState, ExampleTrigger>(ExampleState()),
+    IntentReceiver<ExampleIntent> {
 
-    private val selectItemListener = MutableSharedFlow<Int>()
-    val state: StateFlow<ExampleState> = flow {
-        merge(
-            getItemsUseCase(), selectItemListener,
-        ).collect { data ->
-            when (data) {
-                is ExampleItemsList -> {
-                    _state = _state.copy(
+    override val dataFlow: Flow<Any>
+        get() = getItemsUseCase()
+
+    override suspend fun handleDataUpdates(data: Any) {
+        when (data) {
+            is ExampleItemsList -> {
+                updateState { state ->
+                    state.copy(
                         isLoading = false,
                         items = data.items.map { item ->
                             ExampleItemUiState(
                                 item = item,
-                                isSelected = _state.items
+                                isSelected = state.items
                                     .firstOrNull { it.item.id == item.id }?.isSelected
                                     ?: false,
                             )
                         }
                     )
                 }
+            }
 
-                is Int -> {
-                    _state = _state.copy(
-                        items = _state.items.map {
-                            if (it.item.id == data) it.copy(isSelected = it.isSelected.not()) else it
+            is ExampleTrigger.SelectItem -> {
+                updateState { state ->
+                    state.copy(
+                        items = state.items.map {
+                            if (it.item.id == data.itemId) it.copy(isSelected = it.isSelected.not()) else it
                         }
                     )
                 }
             }
-
-            emit(_state)
         }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
-        _state,
-    )
+    }
 
-    fun handleIntent(exampleIntent: ExampleIntent) {
-        when (exampleIntent) {
-            is ExampleIntent.ClickExample -> onItemClicked(exampleIntent.id)
+    override fun receiveIntent(intent: ExampleIntent) {
+        when (intent) {
+            is ExampleIntent.ClickExample -> onItemClicked(intent.id)
         }
     }
 
     private fun onItemClicked(id: Int) {
         viewModelScope.launch {
-            selectItemListener.emit(id)
+            sendTrigger(ExampleTrigger.SelectItem(id))
         }
+    }
+
+    sealed interface ExampleTrigger {
+        data class SelectItem(val itemId: Int) : ExampleTrigger
     }
 }

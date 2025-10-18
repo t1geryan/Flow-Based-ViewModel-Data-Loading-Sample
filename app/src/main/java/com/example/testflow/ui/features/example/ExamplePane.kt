@@ -37,7 +37,7 @@ fun ExamplePane(
     val state by viewModel.state.collectAsState()
     ExamplePane(
         state = state,
-        onSendIntent = viewModel::handleIntent,
+        onSendIntent = viewModel::receiveIntent,
         modifier = modifier,
     )
 }
