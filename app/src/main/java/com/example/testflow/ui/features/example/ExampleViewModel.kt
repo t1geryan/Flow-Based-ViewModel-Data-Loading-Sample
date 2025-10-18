@@ -22,7 +22,7 @@ class ExampleViewModel @Inject constructor(
     override val dataFlow: Flow<Any>
         get() = getItemsUseCase()
 
-    override suspend fun handleDataUpdates(data: Any) {
+    override fun handleDataUpdates(data: Any) {
         when (data) {
             is ExampleItemsList -> {
                 updateState { state ->
@@ -54,7 +54,9 @@ class ExampleViewModel @Inject constructor(
                 updateState { state -> state.copy(isLoading = data.value) }
             }
 
-            is ExampleTrigger.GenerateNumber -> generateNumber()
+            is ExampleTrigger.SetGeneratedNumber -> {
+                updateState { state -> state.copy(randomNumber = data.number)}
+            }
         }
     }
 
@@ -68,27 +70,27 @@ class ExampleViewModel @Inject constructor(
                 is ExampleIntent.ClickExample -> sendTrigger(ExampleTrigger.SelectItem(intent.id))
                 ExampleIntent.GetRandomNumber -> {
                     sendTrigger(ExampleTrigger.SetLoading(true))
-                    sendTrigger(ExampleTrigger.GenerateNumber)
+                    generateNumber()
                 }
             }
         }
     }
 
-    private suspend fun generateNumber() {
-        getRandomNumberUseCase()
-            .onSuccess { generatedNumber ->
-                updateState { state ->
-                    state.copy(randomNumber = generatedNumber.value)
+    private fun generateNumber() {
+        viewModelScope.launch {
+            getRandomNumberUseCase()
+                .onSuccess { generatedNumber ->
+                    sendTrigger(ExampleTrigger.SetGeneratedNumber(generatedNumber.value))
+                }.also {
+                    sendTrigger(ExampleTrigger.SetLoading(false))
                 }
-            }.also {
-                sendTrigger(ExampleTrigger.SetLoading(false))
-            }
+        }
     }
 
     sealed interface ExampleTrigger {
         data class SelectItem(val itemId: Int) : ExampleTrigger
 
-        data object GenerateNumber : ExampleTrigger
+        data class SetGeneratedNumber(val number: Int) : ExampleTrigger
 
         data class SetLoading(val value: Boolean) : ExampleTrigger
     }

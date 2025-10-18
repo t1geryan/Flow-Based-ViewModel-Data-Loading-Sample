@@ -34,7 +34,7 @@ abstract class StateHolderViewModel<S : Any, T : Any>(initial: S) : ViewModel() 
     /**
      * Handles triggers and data from use cases
      */
-    protected abstract suspend fun handleDataUpdates(data: Any)
+    protected abstract fun handleDataUpdates(data: Any)
 
     protected open suspend fun onDataDemanded() {
         // no-op
