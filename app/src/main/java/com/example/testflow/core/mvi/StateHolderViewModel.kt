@@ -18,6 +18,7 @@ abstract class StateHolderViewModel<S : Any, T : Any>(initial: S) : ViewModel() 
 
     private var _state = initial
     val state: StateFlow<S> = flow {
+        // onDataDemanded callback can be added here if it is required by the app
         merge(_trigger, dataFlow).collect { data ->
             handleDataUpdates(data)
             emit(_state)
