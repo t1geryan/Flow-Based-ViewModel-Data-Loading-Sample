@@ -25,6 +25,9 @@ abstract class StateHolderViewModel<S : Any, T : Any>(initial: S) : ViewModel() 
         }
     }.distinctUntilChanged().stateIn(
         viewModelScope,
+        // Flow will become active when the first subscriber appear.
+        // Will keep Flow active for 5 seconds when all subscribers (usually single subscriber) unsubscribe.
+        // Google recommends to use 5 seconds which enough for Activity recreation.
         SharingStarted.WhileSubscribed(5_000),
         _state,
     )
