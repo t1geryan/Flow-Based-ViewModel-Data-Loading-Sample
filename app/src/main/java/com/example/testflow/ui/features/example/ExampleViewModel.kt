@@ -60,23 +60,17 @@ class ExampleViewModel @Inject constructor(
         }
     }
 
-    override suspend fun onDataDemanded() {
-        generateNumber()
-    }
-
     override fun receiveIntent(intent: ExampleIntent) {
         viewModelScope.launch {
             when (intent) {
                 is ExampleIntent.ClickExample -> sendTrigger(ExampleTrigger.SelectItem(intent.id))
-                ExampleIntent.GetRandomNumber -> {
-                    sendTrigger(ExampleTrigger.SetLoading(true))
-                    generateNumber()
-                }
+                ExampleIntent.GetRandomNumber -> generateNumber()
             }
         }
     }
 
     private fun generateNumber() {
+        sendTrigger(ExampleTrigger.SetLoading(true))
         viewModelScope.launch {
             getRandomNumberUseCase()
                 .onSuccess { generatedNumber ->

@@ -18,7 +18,6 @@ abstract class StateHolderViewModel<S : Any, T : Any>(initial: S) : ViewModel() 
 
     private var _state = initial
     val state: StateFlow<S> = flow {
-        onDataDemanded()
         merge(_trigger, dataFlow).collect { data ->
             handleDataUpdates(data)
             emit(_state)
@@ -38,10 +37,6 @@ abstract class StateHolderViewModel<S : Any, T : Any>(initial: S) : ViewModel() 
      * Handles triggers and data from use cases
      */
     protected abstract fun handleDataUpdates(data: Any)
-
-    protected open suspend fun onDataDemanded() {
-        // no-op
-    }
 
     protected fun sendTrigger(trigger: T) {
         viewModelScope.launch {
