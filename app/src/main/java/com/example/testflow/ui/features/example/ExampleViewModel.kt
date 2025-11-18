@@ -3,8 +3,8 @@ package com.example.testflow.ui.features.example
 import androidx.lifecycle.viewModelScope
 import com.example.testflow.core.mvi.IntentReceiver
 import com.example.testflow.core.mvi.StateHolderViewModel
-import com.example.testflow.domain.models.ExampleItemsList
-import com.example.testflow.domain.usecases.GetExampleItemsUseCase
+import com.example.testflow.domain.models.DevicesList
+import com.example.testflow.domain.usecases.GetDevicesUseCase
 import com.example.testflow.domain.usecases.GetRandomNumberUseCase
 import com.example.testflow.ui.features.example.ExampleViewModel.ExampleTrigger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExampleViewModel @Inject constructor(
     private val getRandomNumberUseCase: GetRandomNumberUseCase,
-    private val getItemsUseCase: GetExampleItemsUseCase,
+    private val getItemsUseCase: GetDevicesUseCase,
 ) : StateHolderViewModel<ExampleState, ExampleTrigger>(ExampleState()),
     IntentReceiver<ExampleIntent> {
 
@@ -24,15 +24,15 @@ class ExampleViewModel @Inject constructor(
 
     override fun handleDataUpdates(data: Any) {
         when (data) {
-            is ExampleItemsList -> {
+            is DevicesList -> {
                 updateState { state ->
                     state.copy(
                         isLoading = false,
-                        items = data.items.map { item ->
+                        devices = data.devices.map { item ->
                             ExampleItemUiState(
-                                item = item,
-                                isSelected = state.items
-                                    .firstOrNull { it.item.id == item.id }?.isSelected
+                                device = item,
+                                isSelected = state.devices
+                                    .firstOrNull { it.device.id == item.id }?.isSelected
                                     ?: false,
                             )
                         }
@@ -43,8 +43,8 @@ class ExampleViewModel @Inject constructor(
             is ExampleTrigger.SelectItem -> {
                 updateState { state ->
                     state.copy(
-                        items = state.items.map {
-                            if (it.item.id == data.itemId) it.copy(isSelected = it.isSelected.not()) else it
+                        devices = state.devices.map {
+                            if (it.device.id == data.itemId) it.copy(isSelected = it.isSelected.not()) else it
                         }
                     )
                 }

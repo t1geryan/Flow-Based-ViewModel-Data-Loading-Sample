@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.testflow.domain.models.ExampleItem
+import com.example.testflow.domain.models.Device
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,11 +76,11 @@ fun ExamplePane(
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(state.items) { uiItem ->
+                items(state.devices) { uiItem ->
                     ExampleItem(
-                        item = uiItem.item,
+                        item = uiItem.device,
                         isSelected = uiItem.isSelected,
-                        onClick = { onSendIntent(ExampleIntent.ClickExample(uiItem.item.id)) }
+                        onClick = { onSendIntent(ExampleIntent.ClickExample(uiItem.device.id)) }
                     )
                 }
             }
@@ -94,7 +94,7 @@ fun ExamplePane(
 }
 
 @Composable
-fun ExampleItem(item: ExampleItem, isSelected: Boolean, onClick: () -> Unit) {
+fun ExampleItem(item: Device, isSelected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -102,7 +102,7 @@ fun ExampleItem(item: ExampleItem, isSelected: Boolean, onClick: () -> Unit) {
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = item.title, style = MaterialTheme.typography.bodyLarge)
+        Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
         if (isSelected) {
             Icon(Icons.Default.Check, contentDescription = "Selected")
         }
@@ -115,17 +115,17 @@ fun ExampleItem(item: ExampleItem, isSelected: Boolean, onClick: () -> Unit) {
 fun ExamplePanePreview() {
     ExamplePane(
         state = ExampleState(
-            items = listOf(
+            devices = listOf(
                 ExampleItemUiState(
-                    item = ExampleItem(1, "First"),
+                    device = Device(1, "First"),
                     isSelected = true,
                 ),
                 ExampleItemUiState(
-                    item = ExampleItem(2, "Second"),
+                    device = Device(2, "Second"),
                     isSelected = true,
                 ),
                 ExampleItemUiState(
-                    item = ExampleItem(3, "Third"),
+                    device = Device(3, "Third"),
                     isSelected = false,
                 ),
             )

@@ -1,7 +1,7 @@
 package com.example.testflow.di
 
-import com.example.testflow.domain.usecases.GetExampleItemsUseCase
-import com.example.testflow.domain.usecases.GetExampleItemsUseCaseImpl
+import com.example.testflow.domain.usecases.GetDevicesUseCase
+import com.example.testflow.domain.usecases.GetDevicesUseCaseImpl
 import com.example.testflow.domain.usecases.GetRandomNumberUseCase
 import com.example.testflow.domain.usecases.GetRandomNumberUseCaseImpl
 import dagger.Binds
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 abstract class UseCasesModule {
     @Binds
     @Singleton
-    abstract fun bindGetExampleItemsUseCase(impl: GetExampleItemsUseCaseImpl): GetExampleItemsUseCase
+    abstract fun bindGetExampleItemsUseCase(impl: GetDevicesUseCaseImpl): GetDevicesUseCase
 
     @Binds
     @Singleton
