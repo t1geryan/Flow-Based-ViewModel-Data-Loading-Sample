@@ -17,9 +17,9 @@ class GetDevicesUseCaseImpl @Inject constructor() : GetDevicesUseCase {
         delay(1.seconds)
         emit(
             DevicesList(
-                Device(id = 1, name = "First device"),
-                Device(id = 2, name = "Second device"),
-                Device(id = 3, name = "Third device")
+                Device(id = 1, name = "First device", userId = 1),
+                Device(id = 2, name = "Second device", userId = 1),
+                Device(id = 3, name = "Third device", userId = 2),
             )
         )
 
@@ -27,10 +27,9 @@ class GetDevicesUseCaseImpl @Inject constructor() : GetDevicesUseCase {
 
         emit(
             DevicesList(
-                Device(id = 1, name = "First device (updated)"),
-                Device(id = 4, name = "Fourth device")
+                Device(id = 1, name = "First device (updated)", userId = 1),
+                Device(id = 4, name = "Fourth device", userId = 3),
             )
         )
     }
-
 }
