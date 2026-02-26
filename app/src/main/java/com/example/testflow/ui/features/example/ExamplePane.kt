@@ -30,6 +30,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.testflow.domain.models.Device
+import com.example.testflow.domain.models.User
+
+private const val USER_CONTENT_TYPE = "USER"
+private const val DEVICE_CONTENT_TYPE = "DEVICE"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,17 +81,11 @@ fun ExamplePane(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(state.devices) { uiItem ->
-                    ExampleItem(
-                        item = uiItem.device,
-                        isSelected = uiItem.isSelected,
-                        onClick = { onSendIntent(ExampleIntent.ClickExample(uiItem.device.id)) }
-                    )
-                }
-            }
+            ItemsList(
+                items = state.items,
+                onSendIntent = onSendIntent,
+                modifier = Modifier.fillMaxSize(),
+            )
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
@@ -98,17 +96,65 @@ fun ExamplePane(
 }
 
 @Composable
-fun ExampleItem(item: Device, isSelected: Boolean, onClick: () -> Unit) {
+private fun ItemsList(
+    items: List<ExampleItemUiState>,
+    modifier: Modifier = Modifier,
+    onSendIntent: (ExampleIntent) -> Unit = {},
+) {
+    LazyColumn(
+        modifier = modifier,
+    ) {
+        items.forEach { uiItem ->
+            item("${uiItem.user.id}", USER_CONTENT_TYPE) {
+                UserItem(
+                    item = uiItem.user,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                )
+            }
+            items(
+                uiItem.devices,
+                { "${uiItem.user.id}-${it.device.id}" },
+                { DEVICE_CONTENT_TYPE }) { deviceItem ->
+                DeviceItem(
+                    item = deviceItem.device,
+                    isSelected = deviceItem.isSelected,
+                    onClick = { onSendIntent(ExampleIntent.ClickExample(deviceItem.device.id)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 32.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UserItem(
+    item: User,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier) {
+        Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
+private fun DeviceItem(
+    item: Device,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(16.dp),
+        modifier = modifier
+            .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
         if (isSelected) {
-            Icon(Icons.Default.Check, contentDescription = "Selected")
+            Icon(Icons.Default.Check, contentDescription = null)
         }
     }
 }
@@ -119,18 +165,29 @@ fun ExampleItem(item: Device, isSelected: Boolean, onClick: () -> Unit) {
 fun ExamplePanePreview() {
     ExamplePane(
         state = ExampleState(
-            devices = listOf(
+            isLoading = false,
+            items = listOf(
                 ExampleItemUiState(
-                    device = Device(1, "First"),
-                    isSelected = true,
+                    user = User(1, "User #1"),
+                    devices = listOf(
+                        ExampleDeviceItemUiState(
+                            device = Device(1, "First", userId = 1),
+                            isSelected = true,
+                        ),
+                        ExampleDeviceItemUiState(
+                            device = Device(2, "Second", userId = 1),
+                            isSelected = true,
+                        ),
+                    )
                 ),
                 ExampleItemUiState(
-                    device = Device(2, "Second"),
-                    isSelected = true,
-                ),
-                ExampleItemUiState(
-                    device = Device(3, "Third"),
-                    isSelected = false,
+                    user = User(2, "User #2"),
+                    devices = listOf(
+                        ExampleDeviceItemUiState(
+                            device = Device(3, "Third", userId = 2),
+                            isSelected = true,
+                        ),
+                    )
                 ),
             )
         )
